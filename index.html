@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Пример сайта на Netlify</title>
+    <title>Мой Плеер</title>
     <link href="https://vjs.zencdn.net/7.15.4/video-js.css" rel="stylesheet" />
     <script src="https://vjs.zencdn.net/7.15.4/video.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
@@ -27,8 +27,8 @@
         <label for="channelSelect">Выберите канал:</label>
         <select id="channelSelect" onchange="changeChannel(this.value)">
             <option value="" selected disabled>Выберите канал</option>
-            <option value="http://stream.backustv.ru/live/btv3/index.m3u8">Канал 1</option>
-            <!-- Здесь замените ссылки и названия каналов -->
+            <option value="http://localhost:3000/proxy?url=http://stream.backustv.ru/live/btv3/index.m3u8">Канал 1</option>
+            <!-- Замени "localhost:3000" на адрес твоего прокси-сервера -->
         </select>
     </div>
     <video id="videoPlayer" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360">
@@ -47,3 +47,18 @@
                 hls.on(Hls.Events.MANIFEST_PARSED, function() {
                     video.play();
                 });
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = sourceUrl;
+                video.addEventListener('loadedmetadata', function() {
+                    video.play();
+                });
+            }
+        }
+
+        // Для автоматической загрузки первого канала
+        document.addEventListener('DOMContentLoaded', () => {
+            changeChannel('http://localhost:3000/proxy?url=http://stream.backustv.ru/live/btv3/index.m3u8');
+        });
+    </script>
+</body>
+</html>
