@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Пример сайта на Netlify</title>
+    <link href="https://vjs.zencdn.net/7.15.4/video-js.css" rel="stylesheet" />
+    <script src="https://vjs.zencdn.net/7.15.4/video.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+            margin: 0;
+        }
+        .channel-list {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="channel-list">
+        <label for="channelSelect">Выберите канал:</label>
+        <select id="channelSelect" onchange="changeChannel(this.value)">
+            <option value="" selected disabled>Выберите канал</option>
+            <option value="http://stream.backustv.ru/live/btv3/index.m3u8">Канал 1</option>
+            <!-- Здесь замените ссылки и названия каналов -->
+        </select>
+    </div>
+    <video id="videoPlayer" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360">
+        <p class="vjs-no-js">
+            Чтобы посмотреть это видео, пожалуйста, включите JavaScript и рассмотрите возможность обновления до браузера, который поддерживает видео HTML5.
+            <a href="https://videojs.com/html5-video-support/" target="_blank">Подробнее</a>
+        </p>
+    </video>
+    <script>
+        function changeChannel(sourceUrl) {
+            const video = document.getElementById('videoPlayer');
+            if (Hls.isSupported()) {
+                const hls = new Hls();
+                hls.loadSource(sourceUrl);
+                hls.attachMedia(video);
+                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    video.play();
+                });
