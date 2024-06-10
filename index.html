@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
@@ -27,8 +26,8 @@
         <label for="channelSelect">Выберите канал:</label>
         <select id="channelSelect" onchange="changeChannel(this.value)">
             <option value="" selected disabled>Выберите канал</option>
-            <option value="http://188.166.30.17:8888/proxy?url=http://stream.backustv.ru/live/btv3/index.m3u8">Канал 2331</option>
-            <!-- Замени "123.123.123.123:8080" на IP и порт выбранного прокси-сервера -->
+            <option value="https://161.35.70.249:8080/proxy?url=http://stream.backustv.ru/live/btv3/index.m3u8">Канал 1</option>
+            <!-- Замени "my-proxy-server.herokuapp.com" на URL вашего публичного прокси-сервера -->
         </select>
     </div>
     <video id="videoPlayer" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360">
@@ -57,7 +56,7 @@
 
         // Для автоматической загрузки первого канала
         document.addEventListener('DOMContentLoaded', () => {
-            changeChannel('http://188.166.30.17:8888/proxy?url=http://stream.backustv.ru/live/btv3/index.m3u8');
+            changeChannel('https://161.35.70.249:8080/proxy?url=http://stream.backustv.ru/live/btv3/index.m3u8');
         });
     </script>
 </body>
