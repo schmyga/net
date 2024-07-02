@@ -1,14 +1,12 @@
+<!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Мой Плеер</title>
-    <link href="https://vjs.zencdn.net/7.15.4/video-js.css" rel="stylesheet" />
-    <script src="https://vjs.zencdn.net/7.15.4/video.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <title>IPTV Плеер</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #00fff4;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -16,47 +14,104 @@
             flex-direction: column;
             margin: 0;
         }
-        .channel-list {
+        .player-container {
+            text-align: center;
+            width: 300px;
+        }
+        .search-container {
             margin-bottom: 20px;
+        }
+        .channel-list {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        video {
+            width: 100%;
         }
     </style>
 </head>
 <body>
-    <div class="channel-list">
-        <label for="channelSelect">Выберите канал:</label>
-        <select id="channelSelect" onchange="changeChannel(this.value)">
+    <div class="player-container">
+        <h1>IPTV Плеер</h1>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Поиск каналов..." onkeyup="searchChannels()">
+        </div>
+        <select id="channelSelect" class="channel-list" onchange="changeChannel()">
             <option value="" selected disabled>Выберите канал</option>
-            <option value="https://161.35.70.249:8080/proxy?url=http://stream.backustv.ru/live/btv3/index.m3u8">Канал 1</option>
-            <!-- Замени "my-proxy-server.herokuapp.com" на URL вашего публичного прокси-сервера -->
+            <!-- Каналы будут добавлены динамически -->
         </select>
+        <video id="videoPlayer" controls>
+            Ваш браузер не поддерживает элемент <code>video</code>.
+        </video>
     </div>
-    <video id="videoPlayer" class="video-js vjs-default-skin" controls preload="auto" width="640" height="360">
-        <p class="vjs-no-js">
-            Чтобы посмотреть это видео, пожалуйста, включите JavaScript и рассмотрите возможность обновления до браузера, который поддерживает видео HTML5.
-            <a href="https://videojs.com/html5-video-support/" target="_blank">Подробнее</a>
-        </p>
-    </video>
     <script>
-        function changeChannel(sourceUrl) {
-            const video = document.getElementById('videoPlayer');
-            if (Hls.isSupported()) {
-                const hls = new Hls();
-                hls.loadSource(sourceUrl);
-                hls.attachMedia(video);
-                hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                    video.play();
-                });
-            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                video.src = sourceUrl;
-                video.addEventListener('loadedmetadata', function() {
-                    video.play();
-                });
+        const channelSelect = document.getElementById('channelSelect');
+        const videoPlayer = document.getElementById('videoPlayer');
+
+        // Функция для изменения канала
+        function changeChannel() {
+            const selectedUrl = channelSelect.value;
+            videoPlayer.src = selectedUrl;
+            videoPlayer.play();
+        }
+
+        // Функция для поиска каналов
+        function searchChannels() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toUpperCase();
+            const options = channelSelect.getElementsByTagName('option');
+            for (let i = 0; i < options.length; i++) {
+                const txtValue = options[i].textContent || options[i].innerText;
+                if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                    options[i].style.display = "";
+                } else {
+                    options[i].style.display = "none";
+                }
             }
         }
 
-        // Для автоматической загрузки первого канала
-        document.addEventListener('DOMContentLoaded', () => {
-            changeChannel('https://161.35.70.249:8080/proxy?url=http://stream.backustv.ru/live/btv3/index.m3u8');
+ // Функция для получения списка каналов из M3U файла
+        async function fetchChannels(url) {
+            try {
+                const response = await fetch(url);
+                const text = await response.text();
+                const lines = text.split('\n');
+                const channels = [];
+                let currentName = '';
+
+                lines.forEach(line => {
+                    if (line.startsWith('#EXTINF')) {
+                        currentName = line.split(',')[1].trim();
+                    } else if (line && !line.startsWith('#')) {
+                        channels.push({ name: currentName, url: line.trim() });
+                        currentName = ''; // Сброс имени после добавления канала в список
+                    }
+                });
+
+                return channels;
+            } catch (error) {
+                console.error('Ошибка при загрузке каналов:', error);
+                return [];
+            }
+        }
+
+// Инициализация списка каналов при загрузке страницы
+        document.addEventListener('DOMContentLoaded', async () => {
+            const channels = await fetchChannels('https://m3u.in/pl/6a0e25594562bb158acc4fe1ae2133f1-12d09c3e8ad57ce519274617092c160d.m3u');
+            
+            if (channels.length > 0) {
+                channels.forEach(channel => {
+                    const option = document.createElement('option');
+                    option.value = channel.url;
+                    option.textContent = channel.name;
+                    channelSelect.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "Не удалось загрузить каналы";
+                channelSelect.appendChild(option);
+            }
         });
     </script>
 </body>
